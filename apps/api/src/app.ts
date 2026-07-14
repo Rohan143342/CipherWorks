@@ -10,6 +10,10 @@ export const createApp = () => {
   app.set('trust proxy', 1);
   app.use(pinoHttp());
   app.use(cors({ origin: process.env.WEB_URL || 'http://localhost:3000', credentials: true }));
+  app.use((_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
   app.use(express.json({ limit: '1mb' }));
   app.get('/health', (_req, res) =>
     res.json({ success: true, message: 'Healthy', data: { status: 'ok' } }),

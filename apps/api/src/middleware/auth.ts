@@ -21,3 +21,19 @@ export const requireRole =
     req.user && roles.includes(req.user.role as 'admin' | 'member')
       ? next()
       : respond(res, 403, 'Insufficient permissions');
+
+const loginAttempts = new Map<string, { count: number; expires: number }>();
+export const rateLimitLogin = (req: Request, res: Response, next: NextFunction) => {
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+  const now = Date.now();
+  const attempt = loginAttempts.get(ip) || { count: 0, expires: now + 15 * 60 * 1000 };
+  if (now > attempt.expires) {
+    attempt.count = 1;
+    attempt.expires = now + 15 * 60 * 1000;
+  } else {
+    attempt.count++;
+  }
+  loginAttempts.set(ip, attempt);
+  if (attempt.count > 10) return respond(res, 429, 'Too many login attempts, please try again later');
+  next();
+};

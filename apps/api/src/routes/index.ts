@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from 'express';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, rateLimitLogin } from '../middleware/auth.js';
 import { requireProjectAccess, requireTaskAccess } from '../middleware/project-access.js';
 import * as auth from '../controllers/auth-controller.js';
 import * as projects from '../controllers/project-controller.js';
@@ -14,7 +14,7 @@ const protect = (handler: (req: Request, res: Response) => Promise<unknown>) => 
   asyncHandler(handler),
 ];
 router.post('/auth/register', asyncHandler(auth.register));
-router.post('/auth/login', asyncHandler(auth.login));
+router.post('/auth/login', rateLimitLogin, asyncHandler(auth.login));
 router.post('/auth/refresh', asyncHandler(auth.refresh));
 router.post('/auth/forgot-password', asyncHandler(auth.forgotPassword));
 router.post('/auth/logout', ...protect(auth.logout));

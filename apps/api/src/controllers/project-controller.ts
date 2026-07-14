@@ -36,8 +36,9 @@ export const getProject = async (req: Request, res: Response) => {
     : respond(res, 404, 'Project not found');
 };
 export const updateProject = async (req: Request, res: Response) => {
+  const query = req.user!.role === 'admin' ? { _id: req.params.projectId } : { _id: req.params.projectId, owner: req.user!.id };
   const project = await ProjectModel.findOneAndUpdate(
-    { _id: req.params.projectId, owner: req.user!.id },
+    query,
     projectSchema.partial().parse(req.body),
     { new: true, runValidators: true },
   );
@@ -47,10 +48,8 @@ export const updateProject = async (req: Request, res: Response) => {
     : respond(res, 404, 'Project not found');
 };
 export const deleteProject = async (req: Request, res: Response) => {
-  const project = await ProjectModel.findOneAndDelete({
-    _id: req.params.projectId,
-    owner: req.user!.id,
-  });
+  const query = req.user!.role === 'admin' ? { _id: req.params.projectId } : { _id: req.params.projectId, owner: req.user!.id };
+  const project = await ProjectModel.findOneAndDelete(query);
   if (project) {
     const { TaskModel } = await import('../models/task.js');
     const { ActivityLogModel } = await import('../models/activity-log.js');
@@ -61,8 +60,9 @@ export const deleteProject = async (req: Request, res: Response) => {
   return project ? respond(res, 200, 'Project deleted') : respond(res, 404, 'Project not found');
 };
 export const archiveProject = async (req: Request, res: Response) => {
+  const query = req.user!.role === 'admin' ? { _id: req.params.projectId } : { _id: req.params.projectId, owner: req.user!.id };
   const project = await ProjectModel.findOneAndUpdate(
-    { _id: req.params.projectId, owner: req.user!.id },
+    query,
     { archivedAt: new Date() },
     { new: true },
   );
