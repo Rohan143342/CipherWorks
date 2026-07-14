@@ -7,6 +7,7 @@ import router from './routes/index.js';
 import { errorHandler, notFound } from './middleware/error.js';
 export const createApp = () => {
   const app = express();
+  app.set('trust proxy', 1);
   app.use(pinoHttp());
   app.use(cors({ origin: process.env.WEB_URL || 'http://localhost:3000', credentials: true }));
   app.use(express.json({ limit: '1mb' }));
