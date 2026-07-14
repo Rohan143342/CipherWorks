@@ -7,5 +7,6 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res) => {
   if ((error as { code?: number }).code === 11000)
     return respond(res, 409, 'A record with that value already exists');
   const status = (error as { status?: number }).status ?? 500;
-  return respond(res, status, error.message);
+  const message = status === 500 && process.env.NODE_ENV !== 'development' ? 'Internal Server Error' : error.message;
+  return respond(res, status, message);
 };
