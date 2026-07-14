@@ -10,7 +10,12 @@ import { useAuth } from '@/contexts/auth-context';
 import { api } from '@/services/api';
 const credentials = z.object({
   email: z.string().email('Enter a valid email'),
-  password: z.string().min(8, 'Use at least 8 characters'),
+  password: z.string()
+    .min(8, 'Use at least 8 characters')
+    .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Must contain at least one number')
+    .regex(/[^A-Za-z0-9]/, 'Must contain at least one special character'),
 });
 type Credentials = z.infer<typeof credentials>;
 export function AuthForm({ mode }: { mode: 'login' | 'register' }) {

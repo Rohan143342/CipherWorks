@@ -35,7 +35,13 @@ export const refresh = async (req: Request, res: Response) => {
     const payload = verifyRefreshToken(token);
     const user = await UserModel.findById(payload.sub).select('+refreshToken');
     if (!user || user.refreshToken !== token) return respond(res, 401, 'Invalid refresh token');
-    return respond(res, 200, 'Token refreshed', { accessToken: createAccessToken(user.id) });
+    const newRefreshToken = createRefreshToken(user.id);
+    user.refreshToken = newRefreshToken;
+    await user.save();
+    return respond(res, 200, 'Token refreshed', { 
+      accessToken: createAccessToken(user.id),
+      refreshToken: newRefreshToken
+    });
   } catch {
     return respond(res, 401, 'Invalid refresh token');
   }
