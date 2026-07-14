@@ -13,7 +13,8 @@ export const listProjects = async (req: Request, res: Response) =>
       archivedAt: null,
     })
       .populate('owner members', 'name email avatarUrl')
-      .sort({ updatedAt: -1 }),
+      .sort({ updatedAt: -1 })
+      .limit(50),
   );
 export const createProject = async (req: Request, res: Response) => {
   const values = projectSchema.parse(req.body);
@@ -50,7 +51,13 @@ export const deleteProject = async (req: Request, res: Response) => {
     _id: req.params.projectId,
     owner: req.user!.id,
   });
-  if (project) await recordActivity(req.user!.id, 'project.deleted', { project: project.id });
+  if (project) {
+    const { TaskModel } = await import('../models/task.js');
+    const { ActivityLogModel } = await import('../models/activity-log.js');
+    await TaskModel.deleteMany({ project: project.id });
+    await ActivityLogModel.deleteMany({ project: project.id });
+    await recordActivity(req.user!.id, 'project.deleted', { project: project.id });
+  }
   return project ? respond(res, 200, 'Project deleted') : respond(res, 404, 'Project not found');
 };
 export const archiveProject = async (req: Request, res: Response) => {

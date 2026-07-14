@@ -12,7 +12,8 @@ export const listComments = async (req: Request, res: Response) =>
     'Comments retrieved',
     await CommentModel.find({ task: req.params.taskId })
       .populate('author', 'name email avatarUrl')
-      .sort({ createdAt: 1 }),
+      .sort({ createdAt: 1 })
+      .limit(100),
   );
 export const createComment = async (req: Request, res: Response) => {
   const task = await TaskModel.findById(req.params.taskId);

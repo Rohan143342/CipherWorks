@@ -21,7 +21,8 @@ export const listTasks = async (req: Request, res: Response) => {
     'Tasks retrieved',
     await TaskModel.find(filter)
       .populate('assignee createdBy', 'name email avatarUrl')
-      .sort({ updatedAt: -1 }),
+      .sort({ updatedAt: -1 })
+      .limit(100),
   );
 };
 export const createTask = async (req: Request, res: Response) => {
@@ -70,10 +71,13 @@ export const updateTask = async (req: Request, res: Response) => {
 };
 export const deleteTask = async (req: Request, res: Response) => {
   const task = await TaskModel.findByIdAndDelete(req.params.taskId);
-  if (task)
+  if (task) {
+    const { CommentModel } = await import('../models/comment.js');
+    await CommentModel.deleteMany({ task: task.id });
     await recordActivity(req.user!.id, 'task.deleted', {
       project: task.project.toString(),
       task: task.id,
     });
+  }
   return task ? respond(res, 200, 'Task deleted') : respond(res, 404, 'Task not found');
 };
